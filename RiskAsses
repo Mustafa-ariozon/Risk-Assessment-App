@@ -1,0 +1,169 @@
+from tkinter import *
+from tkinter import messagebox
+import matplotlib.pyplot as plt
+
+# Define rating scales for likelihood and impact
+likelihood_scale = {
+    "Low": 0.2,
+    "Medium": 0.5,
+    "High": 0.8
+}
+
+impact_scale = {
+    "Low": 0.3,
+    "Medium": 0.6,
+    "High": 0.9
+}
+
+# Create an empty list to store risks
+risks = []
+
+def calculate_likelihood(vulnerability, threat):
+    # Perform likelihood calculation based on vulnerability and threat
+    if vulnerability == "weak access controls" and threat == "physical breaches":
+        return likelihood_scale["High"]
+    else:
+        return likelihood_scale["Low"]
+
+def calculate_impact(asset, vulnerability):
+    # Perform impact calculation based on asset and vulnerability
+    if asset == "network infrastructure" and vulnerability == "weak access controls":
+        return impact_scale["Medium"]
+    elif asset == "sensitive data storage" and vulnerability == "outdated software versions":
+        return impact_scale["High"]
+    else:
+        return impact_scale["Low"]
+
+def calculate_risk_rating(likelihood, impact):
+    # Perform risk rating calculation based on likelihood and impact
+    return likelihood * impact
+
+def prioritize_risks():
+    # Prioritize risks based on factors like impact, likelihood, risk appetite, and criteria
+    # Sort the risks list based on the calculated risk ratings
+    risks.sort(key=lambda x: x["Rating"], reverse=True)
+
+    # Display the prioritized risks in the report panel
+    report_text.delete(1.0, END)
+    report_text.insert(END, "Prioritized Risks:\n\n")
+    for index, risk in enumerate(risks):
+        report_text.insert(END, f"Risk {index+1}\n")
+        report_text.insert(END, f"Asset: {risk['Asset']}\n")
+        report_text.insert(END, f"Vulnerability: {risk['Vulnerability']}\n")
+        report_text.insert(END, f"Threat: {risk['Threat']}\n")
+        report_text.insert(END, f"Likelihood: {risk['Likelihood']}\n")
+        report_text.insert(END, f"Impact: {risk['Impact']}\n")
+        report_text.insert(END, f"Rating: {risk['Rating']}\n")
+        report_text.insert(END, "\n")
+
+def generate_graph():
+    # Create lists to store risk labels and ratings
+    labels = []
+    ratings = []
+
+    # Populate the lists with risk data
+    for risk in risks:
+        labels.append(f"{risk['Asset']} - {risk['Threat']}")
+        ratings.append(risk['Rating'])
+
+    # Create a pie chart to visualize the risks
+    plt.pie(ratings, labels=labels, autopct='%1.1f%%')
+    plt.axis('equal')
+    plt.title('Risk Assessment')
+
+    # Display the chart
+    plt.show()
+
+def suggest_mitigation_strategies():
+    # Display suggestions for mitigation strategies in the report panel
+    report_text.delete(1.0, END)
+    report_text.insert(END, "Mitigation Strategies:\n\n")
+    for index, risk in enumerate(risks):
+        report_text.insert(END, f"Suggestions for Risk {index+1}:\n")
+        report_text.insert(END, "Mitigation Strategy 1\n")
+        report_text.insert(END, "Mitigation Strategy 2\n")
+        report_text.insert(END, "\n")
+
+def add_risk():
+    # Retrieve user input values
+    asset = asset_entry.get()
+    vulnerability = vulnerability_entry.get()
+    threat = threat_entry.get()
+
+    # Perform data validation checks
+    if not asset or not vulnerability or not threat:
+        messagebox.showerror("Error", "Please fill in all fields")
+        return
+
+    # Calculate risk likelihood and impact based on user input
+    likelihood = calculate_likelihood(vulnerability, threat)
+    impact = calculate_impact(asset, vulnerability)
+
+    # Calculate risk rating
+    rating = calculate_risk_rating(likelihood, impact)
+
+    # Create a dictionary to store the risk details
+    risk = {
+        "Asset": asset,
+        "Vulnerability": vulnerability,
+        "Threat": threat,
+        "Likelihood": likelihood,
+        "Impact": impact,
+        "Rating": rating
+    }
+
+    # Add the risk to the list
+    risks.append(risk)
+
+    # Clear the input fields
+    clear_input_fields()
+
+def clear_input_fields():
+    asset_entry.delete(0, END)
+    vulnerability_entry.delete(0, END)
+    threat_entry.delete(0, END)
+
+# Create the main application window
+root = Tk()
+root.title("Risk Assessment App")
+
+# Create and configure the input frame
+input_frame = Frame(root)
+input_frame.pack(pady=10)
+
+asset_label = Label(input_frame, text="Asset:")
+asset_label.grid(row=0, column=0)
+asset_entry = Entry(input_frame)
+asset_entry.grid(row=0, column=1)
+
+vulnerability_label = Label(input_frame, text="Vulnerability:")
+vulnerability_label.grid(row=1, column=0)
+vulnerability_entry = Entry(input_frame)
+vulnerability_entry.grid(row=1, column=1)
+
+threat_label = Label(input_frame, text="Threat:")
+threat_label.grid(row=2, column=0)
+threat_entry = Entry(input_frame)
+threat_entry.grid(row=2, column=1)
+
+add_button = Button(input_frame, text="Add Risk", command=add_risk)
+add_button.grid(row=3, columnspan=2, pady=10)
+
+# Create the report panel
+report_panel = Frame(root)
+report_panel.pack()
+
+report_text = Text(report_panel, height=10, width=50)
+report_text.pack(pady=10)
+
+prioritize_button = Button(report_panel, text="Prioritize Risks", command=prioritize_risks)
+prioritize_button.pack()
+
+graph_button = Button(report_panel, text="Generate Graph", command=generate_graph)
+graph_button.pack()
+
+mitigation_button = Button(report_panel, text="Suggest Mitigation Strategies", command=suggest_mitigation_strategies)
+mitigation_button.pack()
+
+# Run the application
+root.mainloop()
